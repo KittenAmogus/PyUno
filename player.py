@@ -4,17 +4,17 @@ from codes import PlayerCodes, ServerCodes, CardCodes
 
 
 class Player:
-	def __init__(self, id_):
+	def __init__(self, sock, id_):
 		self.id		=	id_
-		self.socket	=	None
+		self.socket	=	sock
 		self.hand	=	[]
 	
 	def _recvData(self, size):
-		pass
+		return self.socket.recv(size)
 	
 	def sendData(self, *data):
-		pass
+		self.socket.sendall(bytearray(data))
 	
 	def playerTurn(self):
-		pass
+		return self._recvData(2)
 

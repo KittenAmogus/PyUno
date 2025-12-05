@@ -1,4 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
+from random import shuffle, seed
 
 from codes import PlayerCodes, ServerCodes, CardCodes
 from card import Card
@@ -40,6 +41,8 @@ class Game:
 		self.players	=	[]
 
 		# Game
+		self.game		= False
+
 		self.tableCard	=	None
 		self.playerTurn	=	0
 
@@ -52,47 +55,104 @@ class Game:
 		pass
 	
 	def _createDeck(self):
-		pass
+		print("Creating deck... ", end="")
+		self.garbage.clear()
+		self.deck = FULL_DECK
+		shuffle(self.deck)
+		print("done")
 
 	# --- Server Actions ---
 
+	def _sendall(self, *data):
+		for player in self.players:
+			player.sendData(*data)
+
 	def _createServer(self):
-		pass
+		self.socket	=	socket(AF_INET, SOCK_STREAM)
+		self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+
+		self.socket.bind((ADDR, PORT))
+		self.socket.listen(MAX_CLIENTS)
+
+		print(f"Server created {ADDR}:{PORT}")
 	
 	def _closeServer(self):
-		pass
-	
-	def _playerJoined(self):
-		pass
+		self.socket.detach()
+		self.socket.close()
+		print("Stopped socket")
+
+	def _playerJoined(self, sock):
+		player = Player(sock, len(self.players))
+		if not self._registerPlayer(player):
+			print("Player not registered!")
+			return False
+
+		self.players.append(player)
+		return True
 	
 	def _playerLeft(self):
 		pass
 	
-	def _registerPlayer(self):
-		pass
+	def _registerPlayer(self, player):
+		return True
+	
+	def _waitForPlayers(self):
+		while len(self.players) < MAX_CLIENTS:
+			usr, addr = self.socket.accept()
+			usr.sendall(bytearray((
+				ServerCodes.CONNECTED, 0x00
+			)))
+			if not self._playerJoined(usr):
+				continue
+
+			match input(f"({len(self.players)}/{MAX_CLIENTS}) players |"
+			" S - start game, Q - quit game > ").lower():
+				case "s":
+					return True
+
+				case "q":
+					return False
 
 	# --- Game Actions ---
 
 	def _gameStart(self):
-		pass
-	
+		self._createDeck()
+		self.game		= True
+		self.playerTurn	= 0
+
 	def _gameEnd(self):
-		pass
+		print("Game stopped")
+		self.game	= False
 	
 	def _gameTurn(self):
-		pass
+		player = self.players[ self.playerTurn ]
+		self._sendall(ServerCodes.JOINED_GAME, 0)
+		self.playerTurn += 1
+
+		code, value = player.playerTurn()
+
+		return False
 	
 	def _gameLoop(self):
-		pass
+		while self.game:
+			if self._gameTurn():
+				self._gameEnd()
+				break
 
 	# --- Start Actions ---
 	
 	def startGame(self):
-		pass
+		self._createServer()
+		self._waitForPlayers()
+		
+		self._initGame()
+		self._gameStart()
 
+		self._gameLoop()
+		self._closeServer()
 
 def _main():
-	pass
+	Game().startGame()
 
 
 if __name__ == "__main__":

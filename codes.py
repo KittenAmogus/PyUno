@@ -19,8 +19,11 @@ class ServerCodes:
 	LEFT_GAME		=	0x05  # PLAYER CODE
 	JOINED_GAME		=	0x06  # PLAYER CODE
 
-	PLAYER_NAME		=	0x07
-	YOUR_CARD		=	0x08
+	PLAYER_NAME		=	0x07  # PLAYER CODE
+	YOUR_CARD		=	0x08  # CARD CODE
+
+	CONNECTED		=	0x0A  # 00
+	FAILED_CONNECT	=	0x0B  # 00
 
 class CardCodes:
 	# Color Value
