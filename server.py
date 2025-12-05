@@ -1,8 +1,8 @@
 from socket import socket, AF_INET, SOCK_STREAM, SOL_SOCKET, SO_REUSEADDR
 
 from codes import PlayerCodes, ServerCodes, CardCodes
-# from card import Card
-# from player import Player
+from card import Card
+from player import Player
 
 
 # later in config
