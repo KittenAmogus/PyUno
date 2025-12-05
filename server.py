@@ -10,6 +10,7 @@ from player import Player
 ADDR		=	"localhost"
 PORT		=	4444
 MAX_CLIENTS	=	6
+START_CARDS	=	7
 
 # Deck
 COLORS = (
@@ -52,12 +53,12 @@ class Game:
 	# --- Init Actions ---
 
 	def _initGame(self):
-		pass
+		self._createDeck()
 	
 	def _createDeck(self):
 		print("Creating deck... ", end="")
 		self.garbage.clear()
-		self.deck = FULL_DECK
+		self.deck = FULL_DECK.copy()
 		shuffle(self.deck)
 		print("done")
 
@@ -86,6 +87,19 @@ class Game:
 		if not self._registerPlayer(player):
 			print("Player not registered!")
 			return False
+
+		for _ in range(START_CARDS):
+			if len(self.deck) == 0:
+				for i, g in enumerate(self.garbage):
+					self.deck.append(g)
+					self.garbage.pop(i)
+					shuffle(self.deck)
+				if len(self.deck) > 0:
+					card = self.deck[-1]
+					self.deck.pop(-1)
+					player.drawCard(card)
+				else:
+					print("Empty deck!")
 
 		self.players.append(player)
 		return True
@@ -116,7 +130,6 @@ class Game:
 	# --- Game Actions ---
 
 	def _gameStart(self):
-		self._createDeck()
 		self.game		= True
 		self.playerTurn	= 0
 
@@ -143,11 +156,10 @@ class Game:
 	
 	def startGame(self):
 		self._createServer()
+		self._initGame()
 		self._waitForPlayers()
 		
-		self._initGame()
 		self._gameStart()
-
 		self._gameLoop()
 		self._closeServer()
 
