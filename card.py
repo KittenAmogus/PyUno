@@ -13,7 +13,7 @@ class Card:
 			"reverse",
 			"plus2"
 		):
-			retun "act"
+			return "act"
 
 		return "wil"
 
