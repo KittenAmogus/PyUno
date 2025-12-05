@@ -18,5 +18,15 @@ class Card:
 		return "wil"
 
 	def __str__(self):
-		pass
+		match (self.color):
+			case "red":		color = 91
+			case "green":	color = 92
+			case "yellow":	color = 93
+			case "blue":	color = 94
+			case "pink":	color = 95
+			case "cyan":	color = 96
+			
+			case _:			color = 0
+
+		return f"\x1b[{color}m" f"({self.value})"
 
