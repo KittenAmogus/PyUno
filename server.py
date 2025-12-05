@@ -70,7 +70,7 @@ class Game:
 		pass
 
 
-def _main(self):
+def _main():
 	pass
 
 
