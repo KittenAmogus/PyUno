@@ -78,7 +78,7 @@ class Game:
 		self.players.pop(player.id)
 	
 	def _registerPlayer(self, player):
-		player.sendData(ServerCodes.CONNECTED, 0x00)
+		player.sendData(ServerCodes.CONNECTED, player.id)
 		return True
 	
 	def _waitForPlayers(self):
