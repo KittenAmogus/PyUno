@@ -4,34 +4,7 @@ from random import shuffle, seed
 from codes import PlayerCodes, ServerCodes, CardCodes
 from card import Card
 from player import Player
-
-
-# later in config
-ADDR		=	"localhost"
-PORT		=	4444
-MAX_CLIENTS	=	6
-START_CARDS	=	7
-
-# Deck
-COLORS = (
-			"red",
-			"green",
-			"yellow",
-			"blue"
-			# ,"pink", "cyan"
-			# Add more colors if u want
-			)
-
-NUMBERS		=	range(10)
-ACT_CARDS	=	("block", "reverse", "plus2")
-WILD_CARDS	=	("fortune", "plus4")
-
-FULL_DECK	= [
-	Card(color, value)
-	for color in COLORS
-	for value in ACT_CARDS + tuple(NUMBERS)
-	for _ in range(2)
-] + [Card("wil", value) for value in WILD_CARDS for _ in range(4)]
+from setting import FULL_DECK, COLORS, ADDR, PORT, MAX_CLIENTS, START_CARDS
 
 
 class Game:
@@ -67,67 +40,66 @@ class Game:
 	def _sendall(self, *data):
 		for player in self.players:
 			player.sendData(*data)
-
+	
 	def _createServer(self):
-		self.socket	=	socket(AF_INET, SOCK_STREAM)
-		self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+		try:
+			self.socket	=	socket(AF_INET, SOCK_STREAM)
+			self.socket.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
+	
+			self.socket.bind((ADDR, PORT))
+			self.socket.listen(MAX_CLIENTS)
 
-		self.socket.bind((ADDR, PORT))
-		self.socket.listen(MAX_CLIENTS)
+			print(f"Server created {ADDR}:{PORT}")
 
-		print(f"Server created {ADDR}:{PORT}")
+		except Exception as e:
+			print(f"Error creating server: {e}")
+			return False
+
+		return True
 	
 	def _closeServer(self):
 		self.socket.detach()
 		self.socket.close()
 		print("Stopped socket")
+		return True
 
 	def _playerJoined(self, sock):
 		player = Player(sock, len(self.players))
+
 		if not self._registerPlayer(player):
 			print("Player not registered!")
 			return False
 
-		for _ in range(START_CARDS):
-			if len(self.deck) == 0:
-				for i, g in enumerate(self.garbage):
-					self.deck.append(g)
-					self.garbage.pop(i)
-					shuffle(self.deck)
-				if len(self.deck) > 0:
-					card = self.deck[-1]
-					self.deck.pop(-1)
-					player.drawCard(card)
-				else:
-					print("Empty deck!")
-
 		self.players.append(player)
 		return True
 	
-	def _playerLeft(self):
-		pass
+	def _playerLeft(self, player):
+		player.leaveGame()
+		self.players.pop(player.id)
 	
 	def _registerPlayer(self, player):
+		player.sendData(ServerCodes.CONNECTED, 0x00)
 		return True
 	
 	def _waitForPlayers(self):
 		while len(self.players) < MAX_CLIENTS:
 			usr, addr = self.socket.accept()
-			usr.sendall(bytearray((
-				ServerCodes.CONNECTED, 0x00
-			)))
 			if not self._playerJoined(usr):
 				continue
 
-			match input(f"({len(self.players)}/{MAX_CLIENTS}) players |"
-			" S - start game, Q - quit game > ").lower():
-				case "s":
-					return True
-
-				case "q":
-					return False
-
 	# --- Game Actions ---
+
+	def _getCard(self):
+		if len(self.deck) == 0:
+			for i, g in self.garbage:
+				self.deck.append(g)
+				self.garbage.pop(i)  # not copy, but actual card
+
+			shuffle(self.deck)
+
+		card = self.deck[-1]
+		self.deck.pop(-1)  # not copy, but actual card
+		return card
 
 	def _gameStart(self):
 		self.game		= True
@@ -139,10 +111,11 @@ class Game:
 	
 	def _gameTurn(self):
 		player = self.players[ self.playerTurn ]
-		self._sendall(ServerCodes.JOINED_GAME, 0)
+		self._sendall(ServerCodes.PLAYER_TURN, player.id)
 		self.playerTurn += 1
 
 		code, value = player.playerTurn()
+		print(hex(code), hex(value))
 
 		return False
 	
