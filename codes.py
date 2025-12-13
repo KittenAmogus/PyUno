@@ -41,8 +41,13 @@ class CardCodes:
 	CUSTOM_CARD	=	0x0F  # like 'swap hands'
 
 	# COLORS
-	RED			=	0x01
-	GREEN		=	0x02
-	YELLOW		=	0x03
-	BLUE		=	0x04
+	RED			=	0x10
+	GREEN		=	0x20
+	YELLOW		=	0x30
+	BLUE		=	0x40
+
+	# TYPES
+	NUM			=	0x01
+	ACT			=	0x02
+	WIL			=	0x03
 
