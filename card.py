@@ -14,14 +14,13 @@ class Card:
 		if self.value in CardCodes.NUMBERS:
 			return CardCodes.NUM
 
-		elif self.value in (
-			CardCodes.BLOCK,
-			CardCodes.REVERSE,
-			CardCodes.PLUS_2
-		):
+		elif self.value in CardCodes.ACT_CARDS:
 			return CardCodes.ACT
 
-		return CardCodes.WIL
+		elif self.value in CardCodes.WILD_CARDS:
+			return CardCodes.WIL
+		
+		raise TypeError( "Invalid card value" )
 	
 	@property
 	def code( self ):
