@@ -14,10 +14,10 @@ class Card:
 		if self.value in CardCodes.NUMBERS:
 			return CardCodes.NUM
 
-		elif self.value in CardCodes.ACT_CARDS:
+		elif self.value in CardCodes.ACT_VALUES:
 			return CardCodes.ACT
 
-		elif self.value in CardCodes.WILD_CARDS:
+		elif self.value in CardCodes.WILD_VALUES:
 			return CardCodes.WIL
 		
 		raise TypeError( "Invalid card value" )

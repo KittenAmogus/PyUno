@@ -54,27 +54,32 @@ class CardCodes:
 	NUMBERS 	=	list(
 		i for i in range( 10 )
 	)
-	NUM_CARDS	=	[
-		Card( col, val )
-		for col in COLORS
-		for val in NUMBERS
-		for _ in range( 2 )
-	]
 
 	ACT_VALUES	=	[ BLOCK, REVERSE, PLUS_2 ]
-	ACT_CARDS	=	[
-		Card( col, val )
-		for col in COLORS
-		for val in ACT_VALUES
-		for _ in range( 2 )
-	]
 
 	WILD_VALUES	=	[ FORTUNE, WILD_PLUS_4 ]
-	WILD_CARDS	=	[
-		Card( WILD, val )
-		for val in WILD_VALUES
-		for _ in range( 4 )
-	]
 
-	ALL_CARDS	=	NUMBER_CARDS + ACT_CARDS + WILD_CARDS
 
+from card import Card
+
+NUMBER_CARDS	=	[
+	Card( col, val )
+	for col in CardCodes.COLORS
+	for val in CardCodes.NUMBERS
+	for _ in range( 2 )
+]
+
+ACT_CARDS	=	[
+	Card( col, val )
+	for col in CardCodes.COLORS
+	for val in CardCodes.ACT_VALUES
+	for _ in range( 2 )
+]
+
+WILD_CARDS	=	[
+	Card( CardCodes.WILD, val )
+	for val in CardCodes.WILD_VALUES
+	for _ in range( 4 )
+]
+
+ALL_CARDS	=	NUMBER_CARDS + ACT_CARDS + WILD_CARDS

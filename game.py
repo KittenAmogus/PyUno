@@ -6,6 +6,7 @@ from player import Player
 from server import Server
 from card import cardFromCode
 from codes import ServerCodes, PlayerCodes, CardCodes
+from codes import ALL_CARDS
 
 
 class Game:
@@ -28,7 +29,7 @@ class Game:
 		logging.basicConfig(
 			# filename="log-DATE.log",
 			level=logging.INFO,
-			format="%(levelname)s\t|\t%(message)s"
+			format="%(levelname)s\t%(message)s"
 		)
 	
 	# --- Server ---
@@ -45,7 +46,8 @@ class Game:
 	def _playerJoined( self, sock, addr ):
 		self.logger.info( f"Joined player, { addr }" )
 		player	=	Player( sock, len( self.players ) )
-		self.server.playerJoined( player.id )
+		self.players.append( player )
+		self.server.playerJoined( player )
 	
 	def _playerLeft( self ):
 		self.server.playerLeft()
@@ -53,7 +55,7 @@ class Game:
 	# --- Deck ---
 
 	def _createDeck( self ):
-		self.deck		=	CardCodes.ALL_CARDS.copy()
+		self.deck		=	ALL_CARDS.copy()
 		self.garbage.clear()
 	
 	def _shuffleDeck( self ):
@@ -72,12 +74,20 @@ class Game:
 		card = self.deck[ -1 ]
 		self.deck.pop( -1 )
 		return card
+	
+	def _drawCard( self, player ):
+		card	=	self._getCard()
+		player.drawCard( card )
+		self.server.drawCard( player.id, card.code )
 
 	# --- Game ---
 
 	def _gameStart( self ):
-		pass
-	
+		for c in range( START_CARD_COUNT ):
+			for player in self.players:
+				self._drawCard( player )
+			self.logger.info( f"Players drawed card: { c }" )
+
 	def _gameEnd( self ):
 		pass
 	
@@ -108,8 +118,6 @@ class Game:
 	def start( self ):
 		self._createServer()
 		self._createDeck()
-
-		print( self._getCard() )
 
 		self._waitForPlayers()
 

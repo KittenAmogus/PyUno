@@ -3,11 +3,13 @@ from socket import SOL_SOCKET, SO_REUSEADDR
 from socket import socket
 
 from setting import ADDRESS, PORT, MAX_PLAYES
+from codes import ServerCodes
 
 
 class Server:
 	def __init__( self ):
-		self.sock	=	None
+		self.sock		=	None
+		self.players	=	[]
 	
 	# --- Server ---
 
@@ -19,7 +21,13 @@ class Server:
 		self.sock.listen( MAX_PLAYES )
 	
 	def closeServer( self ):
-		pass
+		self.sock.detach()
+		self.sock.close()
+	
+	def sendAll( self, *data ):
+		# byte_data	=	bytearray( data )
+		for player in self.players:
+			player.sendData( *data )
 	
 	# --- Game ---
 
@@ -32,13 +40,15 @@ class Server:
 	def placeCard( self ):
 		pass
 	
-	def drawCard( self ):
+	def drawCard( self, player_id, card_code ):
 		pass
 	
 	# --- Player ---
 
-	def playerJoined( self, player_id ):
-		pass
+	def playerJoined( self, player ):
+		self.players.append( player )
+		player.sendData( ServerCodes.CONNECTED, player.id )
+		self.sendAll( ServerCodes.PLAYER_JOINED, player.id  )
 	
 	def playerLeft( self ):
 		pass

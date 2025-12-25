@@ -2,7 +2,7 @@ class Player:
 	def __init__( self, sock, id_ ):
 		# Server
 		self.sock	=	sock
-		self.id		=	id
+		self.id		=	id_
 
 		# Game
 		self.ready	=	False
@@ -16,4 +16,7 @@ class Player:
 	
 	def drawCard( self, card ):
 		self.hand.append( card )
+	
+	def sendData( self, *data ):
+		self.sock.sendall( bytearray( data ) )
 
