@@ -21,7 +21,7 @@ class ServerCodes:
 	"""Server sends this code to player who needs to card with <card count>
 		Next <card count> bytes are card codes which player drawed( or FF if cannot draw and loop ends )"""
 
-	GAME_START		=	0x09	# 00
+	GAME_START		=	0x09	# TABLE_CARD_CODE
 	GAME_END		=	0x0A	# WINNER_ID
 	"""Server sends these codes at the start/end of game
 	GAME_END's second arg is <player id> of winning player"""

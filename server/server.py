@@ -42,6 +42,9 @@ class Server:
 		self.socket	=	None
 	
 	# --- Game ---
+
+	def _onSetTableCard( self ):
+		pass
 	
 	def _onGameStart( self ):
 		pass
@@ -61,5 +64,8 @@ class Server:
 		pass
 	
 	def _onPlayerLeft( self ):
+		pass
+	
+	def _waitForPlayer( self ):
 		pass
 
