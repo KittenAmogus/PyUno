@@ -7,6 +7,7 @@ class Player:
 		self.id		=	id_
 
 		self.hand	=	[]
+		self.ready	=	False
 		# self.name	=	None
 	
 	def sendData( self, *data ):

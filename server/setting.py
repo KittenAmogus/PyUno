@@ -1,0 +1,6 @@
+START_CARDS	=	7
+MAX_PLAYERS	=	6
+
+HOST		=	"127.0.0.1"
+PORT		=	7777
+

@@ -1,7 +1,9 @@
 import random
 
 import codes
+from setting import *
 from card import Card
+from player import Player
 from server import Server
 
 
@@ -48,6 +50,9 @@ class Game( Server ):
 	
 	# --- Player ---
 
+	def _areAllPlayersReady( self ):
+		pass
+
 	def _drawCard( self ):
 		pass
 	
@@ -55,7 +60,22 @@ class Game( Server ):
 		pass
 	
 	def _waitForPlayers( self ):
-		pass
+		while( len( self.players ) < MAX_PLAYERS ):
+			sock	=	self._waitForPlayer()
+			
+			if ( not sock or sock is None ):
+				continue
+
+			player	=	Player( sock, len( self.players ))
+			if ( not self._onPlayerJoined( player ) ):
+				self._onPlayerLeft( player )
+				continue
+
+			self.players.append( player )
+			if ( self._areAllPlayersReady() ):
+				break
+
+		return True
 	
 	# --- Main ---
 

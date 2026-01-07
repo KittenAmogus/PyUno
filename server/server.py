@@ -1,11 +1,7 @@
 import socket
 
 import codes
-
-
-HOST		=	"localhost"
-PORT		=	7777
-MAX_PLAYERS	=	6	# Can be up to 17 if start hand contains 7 cards
+from setting import *
 
 
 class Server:
@@ -60,12 +56,19 @@ class Server:
 	
 	# --- Player ---
 	
-	def _onPlayerJoined( self ):
-		pass
+	def _onPlayerJoined( self, player ):
+		player.sendData( codes.ServerCodes.CONNECTED, player.id )
+		return True
+		# try-except will be later
 	
 	def _onPlayerLeft( self ):
 		pass
 	
 	def _waitForPlayer( self ):
-		pass
+		try:
+			sock, _addr	=	self.socket.accept()
+			return sock
+
+		except:  # idk what errors can apear here
+			return None
 
