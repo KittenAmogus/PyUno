@@ -1,25 +1,47 @@
-class ServerCodes:	# To player
+class ServerCodes:
+	"""Server sends ServerCodes to players"""
 	CONNECTED		=	0x00	# PLAYER_ID
 	FAILED			=	0x01	# FAIL CODE
+	"""Server sends CONNECTED/FAILED to player when he trying to connect"""
 
 	PLAYER_JOINED	=	0x02	# PLAYER_ID
 	PLAYER_LEFT		=	0x03	# PLAYER_ID
+	"""Server sends these codes to all players when player left/joined"""
 
 	PLAYER_TURN		=	0x04	# PLAYER_ID
 	PLAYER_DRAWED	=	0x05	# CARD_COUNT
 	PLAYER_PLACED	=	0x06	# CARD_CODE
+	PLAYER_TURN_END	=	0x07	# 00
+	"""Server sends PLAYER_TURN code with <player id>
+		Then Player sends his codes to draw/place cards
+		Server sends code PLAYER_DRAWED/PLAYER_PLACED to all players
+	Server sends PLAYER_TURN_END to all players"""
 
-	FORCE_DRAW		=	0x07	# CARD_CODE
+	FORCE_DRAW		=	0x08	# CARD_COUNT
+	"""Server sends this code to player who needs to card with <card count>
+		Next <card count> bytes are card codes which player drawed( or FF if cannot draw and loop ends )"""
+
+	GAME_START		=	0x09	# 00
+	GAME_END		=	0x0A	# WINNER_ID
+	"""Server sends these codes at the start/end of game
+	GAME_END's second arg is <player id> of winning player"""
 
 
-class PlayerCodes:	# From player
+class PlayerCodes:
+	"""Player sends PlayerCodes to server"""
 	DRAW_CARD		=	0x00	# 00
 	PLACE_CARDS		=	0x01	# CARDS_COUNT
+	"""After PLACE_CARDS <count> goes <count> bytes with card ids
+	Card id is index of card in player's hand( 0 -- <card count - 1>)"""
 
 	LEAVE_GAME		=	0x02	# 00
+	TOGGLE_READY	=	0x03	# 00
+	"""if all players are ready and there are >1 players, game starts
+	Game also starts if there are <max players> players"""
 
 
 class CardCodes:
+	"""Server sends CardCodes with FORCE_DRAW and PLAYER_PLACED codes"""
 	# -- Colors --
 	WILD	=	0x00
 	RED		=	0x10
@@ -29,8 +51,8 @@ class CardCodes:
 	# MAGENTA	=	0x50
 	# CYAN		=	0x60
 	COLORS	=	[ RED, GREEN, YELLOW, BLUE ]
-	# Wild color only exist in hand for Wild cards,
-	# you must specify color before placing Wild card
+	"""Wild color only exist in hand for Wild cards,
+	you must specify color before placing Wild card"""
 
 	# -- Values --
 	# Numbers
@@ -45,12 +67,6 @@ class CardCodes:
 	# Wild
 	FORTUNE		=	0x0D
 	WILD_PLUS_4	=	0x0E
-	# SWAP_HANDS	=	0x0F
+	"""0xFF is reserved to draw error"""
 	WILD_CARDS	=	[ FORTUNE, WILD_PLUS_4 ]
-
-	# # -- Types --
-	# TYPE_NUMBER	=	0x00
-	# TYPE_ACT	=	0x01
-	# TYPE_WILD	=	0x02
-	# # Types are only for drawing (and maybe filters)
 
