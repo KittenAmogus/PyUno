@@ -1,74 +1,73 @@
 import socket
 
 import codes
-from setting import *
+import setting
 
 
 class Server:
-	def __init__( self ):
-		self.socket		=	None
-		self.user_socks	=	[]
-	
-	# --- Server ---
+    def __init__(self):
+        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.user_socks = []
 
-	def _createServer( self ) -> bool:
-		self.socket		=	socket.socket(
-			socket.AF_INET, socket.SOCK_STREAM
-		)
-		self.socket.setsockopt(
-			socket.SOL_SOCKET, socket.SO_REUSEADDR, 1
-			# If code breaks, new socket can bind on this addr
-		)
+    # --- Server ---
 
-		try:
-			self.socket.bind(( HOST, PORT ))
-			self.socket.listen( MAX_PLAYERS )
+    def _createServer(self) -> bool:
+        self.socket.setsockopt(
+            socket.SOL_SOCKET,
+            socket.SO_REUSEADDR,
+            1,
+            # If code breaks, new socket can bind on this addr
+        )
 
-			return True
+        try:
+            self.socket.bind((setting.HOST, setting.PORT))
+            self.socket.listen(setting.MAX_PLAYERS)
 
-		except OSError as err:
-			print( "\x1b[101;30;5m" + str( err ) + "\x1b[0m" )
-			raise err
+            return True
 
-		return False
-	
-	def _closeServer( self ) -> None:
-		self.socket.detach()
-		self.socket.close()
-		self.socket	=	None
-	
-	# --- Game ---
+        except OSError as err:
+            print("\x1b[101;30;5m" + str(err) + "\x1b[0m")
+            raise err
 
-	def _onSetTableCard( self ):
-		pass
-	
-	def _onGameStart( self ):
-		pass
-	
-	def _onGameEnd( self ):
-		self._closeServer()
-	
-	def _onCardDraw( self ):
-		pass
-	
-	def _onCardPlace( self ):
-		pass
-	
-	# --- Player ---
-	
-	def _onPlayerJoined( self, player ):
-		player.sendData( codes.ServerCodes.CONNECTED, player.id )
-		return True
-		# try-except will be later
-	
-	def _onPlayerLeft( self ):
-		pass
-	
-	def _waitForPlayer( self ):
-		try:
-			sock, _addr	=	self.socket.accept()
-			return sock
+    def _closeServer(self) -> None:
+        self.socket.detach()
+        self.socket.close()
 
-		except:  # idk what errors can apear here
-			return None
+    # --- Game ---
 
+    def _onGameStart(self, tableCard):
+        self._sendAll(codes.ServerCodes.GAME_START, tableCard.code)
+
+    def _onGameEnd(self):
+        self._closeServer()
+
+    def _onCardDraw(self, player):
+        for p in self.user_socks:
+            p.sendall(bytearray((codes.ServerCodes.PLAYER_DRAWED, player.id)))
+
+    def _onCardPlace(self, card):
+        self._sendAll(codes.ServerCodes.PLAYER_PLACED, card.code)
+
+    # --- Player ---
+
+    def _sendAll(self, *data):
+        data_ = bytearray(data)
+        for p in self.user_socks:
+            p.sendall(data_)
+
+    def _onPlayerJoined(self, player):
+        player.sendData(codes.ServerCodes.CONNECTED, player.id)
+        self._sendAll(codes.ServerCodes.PLAYER_JOINED, player.id)
+        return True
+        # try-except will be later
+
+    def _onPlayerLeft(self, player):
+        self._sendAll(codes.ServerCodes.PLAYER_LEFT, player.id)
+
+    def _waitForPlayer(self):
+        try:
+            sock, _addr = self.socket.accept()
+            return sock
+
+        except ConnectionError:  # idk what errors can apear here
+            return None
