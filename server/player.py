@@ -1,6 +1,3 @@
-import codes
-
-
 class Player:
     def __init__(self, socket, id_):
         self.socket = socket
@@ -8,7 +5,10 @@ class Player:
 
         self.hand = []
         self.ready = False
-        # self.name    =    None
+        self.name = ""
+
+        # For server
+        self.canPlaceCount = 0
 
     def drawCard(self, card):
         if card.code != 0x0F:
@@ -17,5 +17,7 @@ class Player:
     def sendData(self, *data):
         self.socket.sendall(bytearray(data))
 
-    def recvData(self, dataLength=2):
-        return self.socket.recv(dataLength)
+    def recvData(self, dataLength=1):
+        data = self.socket.recv(dataLength)
+        # print(*(hex(i) for i in data))
+        return data

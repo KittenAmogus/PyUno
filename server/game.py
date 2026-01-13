@@ -23,14 +23,16 @@ class Game(Server):
     # --- Game init ---
 
     def _startGame(self):
-        self._onGameStart(self.tableCard)
+        print(">>>> Game started")
         self._createDeck()
         self._shuffleDeck()
         self._setTableCard()
         self.game = True
+        self._onGameStart(self.tableCard)
 
     def _stopGame(self):
         self._onGameEnd()
+        print(">>>> Game stopped")
 
     def _createDeck(self):
         self.deck = [
@@ -44,9 +46,11 @@ class Game(Server):
             for value in codes.CardCodes.WILD_CARDS
             for _ in range(4)
         ]
+        print(f" >>> Deck created: {len(self.deck)} cards")
 
     def _setTableCard(self):
         self.tableCard = self._getCard()
+        print(f"  >> New table card: {self.tableCard}")
 
     # --- Game process ---
 
@@ -55,6 +59,7 @@ class Game(Server):
             self.deck.append(card)
 
         random.shuffle(self.deck)
+        print(f"  >> Deck shuffled: {len(self.deck)} cards")
 
     def _getCard(self):
         if len(self.deck) == 0:
@@ -65,10 +70,51 @@ class Game(Server):
             self.deck.pop(-1)
             return card
 
-        return 0x0F  # Empty card code
+        raise IndexError("Run out of cards :(")
 
     def _playerTurn(self):
-        pass
+        player = self.players[self.playerTurn]
+        self._onPlayerTurn(player)
+        print(f" >>> Player turn: {player.id}")
+
+        self.playerTurn = (self.playerTurn + self.turnQueue) % len(self.players)
+
+        # -- Client sending codes
+
+        data = player.recvData(1)
+        # print(data)
+
+        match data[0]:
+            case codes.PlayerCodes.DRAW_CARD:
+                self._drawCard(player)
+                print("  >> Player drawed card")
+
+            case codes.PlayerCodes.PLACE_CARDS:
+                count = player.recvData(1)[0]
+                card_codes = map(int, bytearray(player.recvData(count)))
+                print(f"  >> Player placing {count} cards")
+                for card_id in card_codes:
+                    if card_id < player.canPlaceCount:
+                        card = player.hand[card_id]
+                        player.hand.pop(card_id)
+                        player.canPlaceCount -= 1
+
+                        self._placeCard(card)
+                        print(f"   > {card}")
+
+            case _:
+                print(f"  >> Invalid code: {data}")
+
+        print(" >>> End of turn")
+
+        # -- Client sent codes
+
+        # For debugging(to prevent infinity loop actually xd)
+        if "n" == input("Continue? "):
+            return False
+
+        self._onPlayerTurnEnd(player)
+        return True
 
     # --- Player ---
 
@@ -113,7 +159,8 @@ class Game(Server):
         self._startGame()
 
         while self.game:
-            self._playerTurn()
+            if not self._playerTurn():
+                break
 
         self._stopGame()
 

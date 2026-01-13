@@ -64,9 +64,16 @@ class Server:
     def _onPlayerLeft(self, player):
         self._sendAll(codes.ServerCodes.PLAYER_LEFT, player.id)
 
+    def _onPlayerTurn(self, player):
+        self._sendAll(codes.ServerCodes.PLAYER_TURN, player.id)
+
+    def _onPlayerTurnEnd(self, player):
+        self._sendAll(codes.ServerCodes.PLAYER_TURN_END, player.id)
+
     def _waitForPlayer(self):
         try:
-            sock, _addr = self.socket.accept()
+            sock, _ = self.socket.accept()
+            self.user_socks.append(sock)
             return sock
 
         except ConnectionError:  # idk what errors can apear here
